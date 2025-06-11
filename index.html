@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Персональный сайт-портфолио</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .copy-notification {
+            position: fixed;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 0.95em;
+            backdrop-filter: blur(5px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            z-index: 500;
+        }
+
+        .copy-notification.show {
+            bottom: 20px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #ffffff;
+            overflow-x: hidden;
+            background: #1a1a1a;
+        }
+
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 20px;
+        }
+
+        .splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(0px) brightness(1);
+        }
+
+        .video-background video {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+            opacity: 1;
+        }
+
+        .content {
+            position: relative;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1s ease 0.5s;
+        }
+
+        .content.visible {
+            opacity: 1;
+        }
+
+        .profile-card {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(15px);
+            max-width: 800px;
+            width: 95%;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile-card.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .name-highlight {
+            color: #7B68EE;
+            position: relative;
+            display: inline-block;
+        }
+
+        .name-highlight::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+        }
+
+        .resume-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.2rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-item:hover {
+            transform: translateY(-3px);
+            background: rgba(138, 43, 226, 0.15);
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.2);
+        }
+
+        .yandex-mail-icon {
+            width: 24px;
+            height: 24px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23FF0000" d="M10 12.5l7-4.5v9l-7-4.5z"/><path fill="%23FC3F1D" d="M2 6.5h20v11H2z"/><path fill="%23FFF" d="M12 13.7l7-4.5v3.4l-7 4.5-7-4.5V9.2z"/></svg>');
+        }
+
+        .vk-icon { color: #07F; }
+        .tg-icon { color: #0088CC; }
+
+        .copied::after {
+            content: "✓ Скопировано!";
+            position: absolute;
+            right: -120px;
+            color: #4CAF50;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .profile-card {
+                padding: 25px;
+            }
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-content">
+            <h1>Добро пожаловать!</h1>
+        </div>
+    </div>
+    <div class="copy-notification" id="copyNotification"></div>
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="videoplayback.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div class="content" id="mainContent">
+        <div class="profile-card">
+            <div class="profile-header">
+                <h1>Привет, я <span class="name-highlight">Камалетдинов Ахат</span></h1>
+                <h2 class="subtitle">QA Engineer</h2>
+            </div>
+
+            <div class="resume-content">
+                <section class="resume-section">
+                    <h2><i class="fas fa-briefcase"></i> О себе</h2>
+                    <div class="resume-item">
+                        <ul class="achievements">
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section class="resume-section">
+                    <h2><i class="fas fa-address-book"></i> Контакты</h2>
+                    <div class="contact-grid">
+                        <div class="contact-item" data-copy="imorgondagen@yandex.ru">
+                            <div class="yandex-mail-icon"></div>
+                            <span>imorgondagen@yandex.ru</span>
+                        </div>
+                        
+                        <div class="contact-item" data-copy="+7 (937) 666-44-39">
+                            <i class="fas fa-phone"></i>
+                            <span>+7 (937) 666-44-39</span>
+                        </div>
+
+                        <a href="https://vk.com/id155542710" target="_blank" class="contact-item">
+                            <i class="fab fa-vk vk-icon"></i>
+                            <span>vk.com/id155542710</span>
+                       </a>
+
+                        <a href="https://t.me/akhat153" target="_blank" class="contact-item">
+    <i class="fab fa-telegram-plane tg-icon"></i>
+    <span>@akhat153</span>
+</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+ document.addEventListener('DOMContentLoaded', () => {
+ const splashScreen = document.getElementById('splashScreen');
+ const mainContent = document.getElementById('mainContent');
+ const profileCard = document.querySelector('.profile-card');
+ const copyNotification = document.getElementById('copyNotification');
+
+ // Инициализация анимации
+ const initAnimations = () => {
+ setTimeout(() => {
+ splashScreen.classList.add('hidden');
+ mainContent.classList.add('visible');
+ profileCard.classList.add('visible');
+ }, 300);
+ };
+
+ // Функция копирования контактов
+ const initContacts = () => {
+ document.querySelectorAll('[data-copy]').forEach(item => { // Исправлен селектор
+ item.addEventListener('click', async function(e) {
+ e.preventDefault();
+ try {
+ const copiedData = this.dataset.copy;
+ await navigator.clipboard.writeText(copiedData);
+ 
+ // Определяем тип контакта
+ const isEmail = copiedData.includes('@');
+ const notificationText = isEmail 
+ ? "✓ Почта скопирована!" 
+ : "✓ Номер телефона скопирован!";
+
+ // Показываем уведомление
+ copyNotification.textContent = notificationText;
+ copyNotification.classList.add('show');
+ setTimeout(() => {
+ copyNotification.classList.remove('show');
+ }, 2000);
+
+ } catch (err) {
+ copyNotification.textContent = "Ошибка копирования!";
+ copyNotification.style.background = "#f44336";
+ copyNotification.classList.add('show');
+ setTimeout(() => {
+ copyNotification.classList.remove('show');
+ copyNotification.style.background = "";
+ }, 2000);
+ }
+ });
+ });
+ };
+
+ setTimeout(initAnimations, 500);
+ initContacts();
+ });
+ </script>
+</body>
+</html>
